@@ -84,6 +84,27 @@ func handleUsersGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleUserDelete(w http.ResponseWriter, r *http.Request) {
+	userId := r.PathValue("id")
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	if _, exists := userMap[userId]; !exists {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	delete(userMap, userId)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	response := map[string]string{"message": "User deleted successfully"}
+
+	json.NewEncoder(w).Encode(response)
+}
+
 func createServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleRoot)
@@ -91,6 +112,7 @@ func createServer() error {
 	mux.HandleFunc("GET /json-struct", handleJSONWithStruct)
 	mux.HandleFunc("POST /user", handleUserPost)
 	mux.HandleFunc("GET /user", handleUsersGet)
+	mux.HandleFunc("DELETE /user/{id}", handleUserDelete)
 
 	fmt.Println("Starting server on http://localhost" + PORT)
 

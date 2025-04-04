@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/google/uuid"
 )
@@ -38,7 +39,10 @@ type User struct {
 	Age   int    `json:"age"`
 }
 
-var userMap = make(map[string]User)
+var (
+	userMap = make(map[string]User)
+	mu      sync.Mutex
+)
 
 func handleUserPost(w http.ResponseWriter, r *http.Request) {
 	var user User
@@ -49,6 +53,8 @@ func handleUserPost(w http.ResponseWriter, r *http.Request) {
 
 	userId := uuid.NewString()
 
+	mu.Lock()
+	defer mu.Unlock()
 	userMap[userId] = user
 
 	w.Header().Set("Content-Type", "application/json")

@@ -41,7 +41,7 @@ type User struct {
 
 var (
 	userMap = make(map[string]User)
-	mu      sync.Mutex
+	mu      sync.RWMutex
 )
 
 func handleUserPost(w http.ResponseWriter, r *http.Request) {
@@ -72,8 +72,8 @@ func handleUserPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleUsersGet(w http.ResponseWriter, r *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
+	mu.RLock()
+	defer mu.RUnlock()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -30,11 +32,45 @@ func handleJSONWithStruct(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+type User struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Age   int    `json:"age"`
+}
+
+var userMap = make(map[string]User)
+
+func handleUserPost(w http.ResponseWriter, r *http.Request) {
+	var user User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userId := uuid.NewString()
+
+	userMap[userId] = user
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	response := map[string]any{
+		"id":   userId,
+		"user": user,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func createServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleRoot)
 	mux.HandleFunc("GET /json", handleJSON)
 	mux.HandleFunc("GET /json-struct", handleJSONWithStruct)
+	mux.HandleFunc("POST /user", handleUserPost)
 
 	fmt.Println("Starting server on http://localhost" + PORT)
 

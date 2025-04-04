@@ -20,10 +20,21 @@ func handleJSON(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+type Response struct {
+	Message string `json:"message"`
+}
+
+func handleJSONWithStruct(w http.ResponseWriter, r *http.Request) {
+	response := Response{Message: "Hello, JSON with Struct!"}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 func createServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleRoot)
 	mux.HandleFunc("GET /json", handleJSON)
+	mux.HandleFunc("GET /json-struct", handleJSONWithStruct)
 
 	fmt.Println("Starting server on http://localhost" + PORT)
 

@@ -105,6 +105,13 @@ func handleUserDelete(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("Received request: %s %s\n", r.Method, r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func createServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleRoot)
@@ -115,6 +122,10 @@ func createServer() error {
 	mux.HandleFunc("DELETE /user/{id}", handleUserDelete)
 
 	fmt.Println("Starting server on http://localhost" + PORT)
+
+	mux.Handle("GET /log-test", loggingMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Logging test endpoint"))
+	})))
 
 	return http.ListenAndServe(PORT, mux)
 }

@@ -121,11 +121,11 @@ func createServer() error {
 	mux.HandleFunc("GET /user", handleUsersGet)
 	mux.HandleFunc("DELETE /user/{id}", handleUserDelete)
 
-	fmt.Println("Starting server on http://localhost" + PORT)
-
 	mux.Handle("GET /log-test", loggingMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Logging test endpoint"))
 	})))
+
+	fmt.Println("Starting server on http://localhost" + PORT)
 
 	return http.ListenAndServe(PORT, mux)
 }

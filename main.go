@@ -71,12 +71,26 @@ func handleUserPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleUsersGet(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(userMap); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func createServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", handleRoot)
 	mux.HandleFunc("GET /json", handleJSON)
 	mux.HandleFunc("GET /json-struct", handleJSONWithStruct)
 	mux.HandleFunc("POST /user", handleUserPost)
+	mux.HandleFunc("GET /user", handleUsersGet)
 
 	fmt.Println("Starting server on http://localhost" + PORT)
 
